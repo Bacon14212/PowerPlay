@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.Official_Power_Play_TeleOp;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-
-@Autonomous(name = "Auto")
+/*
+@Autonomous(name = "Left Auto")
 public class VisionTest extends LinearOpMode {
 
     public DcMotor frontLeft = null;
@@ -22,17 +22,9 @@ public class VisionTest extends LinearOpMode {
     public DcMotor backRight = null;
     public DcMotor Lift = null;
     public Servo   claw;               // SERVO FOR THE CLAW
-
     SleeveDetection sleeveDetection;
     OpenCvCamera camera;
 
-    private int fLPos;
-    private int fRPos;
-    private int bLPos;
-    private int bRPos;
-
-    final double WHEEL_DIAMETER = 4; //Inches
-    final double PULSES_PER_ROTATION = 384.5; //Gobilda 435 rpm motor
     final double CLAW_OPEN =  0.65;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 1;       // SERVO POSITION TO CLOSE CLAW
 
@@ -41,10 +33,10 @@ public class VisionTest extends LinearOpMode {
     String webcamName = "Webcam 1";
 
     public void runOpMode() throws InterruptedException {
-        frontLeft  = hardwareMap.dcMotor.get("leftFront");
-        backLeft   = hardwareMap.dcMotor.get("leftRear");
-        frontRight = hardwareMap.dcMotor.get("rightFront");
-        backRight  = hardwareMap.dcMotor.get("rightRear");
+        frontLeft = hardwareMap.dcMotor.get("frontLeft");
+        backLeft = hardwareMap.dcMotor.get("backLeft");
+        frontRight = hardwareMap.dcMotor.get("frontRight");
+        backRight = hardwareMap.dcMotor.get("backRight");
         Lift = hardwareMap.dcMotor.get("Lift");
         claw = hardwareMap.servo.get("claw");
 
@@ -72,25 +64,22 @@ public class VisionTest extends LinearOpMode {
         }
 
         waitForStart();
-        telemetry.addData("Path", "Start");
-        telemetry.addData("fL: ", frontLeft.getCurrentPosition());
-        telemetry.addData("fR: ", frontRight.getCurrentPosition());
-        telemetry.addData("bL: ", backLeft.getCurrentPosition());
-        telemetry.addData("bR: ", backRight.getCurrentPosition());
-        telemetry.update();
-        sleep(1000);
         claw.setPosition(CLAW_CLOSE);
         if (sleeveDetection.getPosition().equals(SleeveDetection.ParkingPosition.RIGHT)) {
-            //Strafe Right
-            frontLeft.setPower(-0.5);
-            backLeft.setPower(-0.5);
-            frontRight.setPower(-0.5);
-            backRight.setPower(0.5);
+            frontLeft.setPower(-0.44);
+            backLeft.setPower(-0.44);
+            frontRight.setPower(-0.44);
+            backRight.setPower(0.44);
             sleep(1000);
             frontLeft.setPower(-0.5);
             backLeft.setPower(0.5);
             frontRight.setPower(0.5);
             backRight.setPower(0.5);
+            sleep(1000);
+            frontLeft.setPower(0.1);
+            backLeft.setPower(-0.1);
+            frontRight.setPower(0.1);
+            backRight.setPower(0.1);
             sleep(1000);
             frontLeft.setPower(0);
             backLeft.setPower(0);
@@ -100,10 +89,10 @@ public class VisionTest extends LinearOpMode {
         }
 
         else if (sleeveDetection.getPosition().equals(SleeveDetection.ParkingPosition.CENTER)) {
-            frontLeft.setPower(-.5);
-            backLeft.setPower(.5);
-            frontRight.setPower(.5);
-            backRight.setPower(.5);
+            frontLeft.setPower(-0.5);
+            backLeft.setPower(0.5);
+            frontRight.setPower(0.5);
+            backRight.setPower(0.5);
             sleep(1000);
             frontLeft.setPower(0);
             backLeft.setPower(0);
@@ -112,10 +101,10 @@ public class VisionTest extends LinearOpMode {
         }
         //Left
         else {
-            frontLeft.setPower(0.5);
-            backLeft.setPower(0.5);
-            frontRight.setPower(0.5);
-            backRight.setPower(-0.5);
+            frontLeft.setPower(0.45);
+            backLeft.setPower(0.45);
+            frontRight.setPower(0.45);
+            backRight.setPower(-0.45);
             sleep(1000);
             frontLeft.setPower(-0.5);
             backLeft.setPower(0.5);
@@ -129,15 +118,11 @@ public class VisionTest extends LinearOpMode {
         }
 
         telemetry.addData("Path", "Complete");
-        telemetry.addData("fL: ", frontLeft.getCurrentPosition());
-        telemetry.addData("fR: ", frontRight.getCurrentPosition());
-        telemetry.addData("bL: ", backLeft.getCurrentPosition());
-        telemetry.addData("bR: ", backRight.getCurrentPosition());
         telemetry.update();
-
 
         sleep(1000);
 
 
     }
 }
+*/

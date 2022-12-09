@@ -5,33 +5,34 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
 public class Official_Power_Play_TeleOp extends OpMode {
 
     //SLIDER ENCODER CALCULATIONS
-    static final double COUNTS_PER_MOTOR_REV = 384.5;        // TICKS PER REVOLUTION FOR 5203 323RPM MOTOR
+    static final double COUNTS_PER_MOTOR_REV = 103.8;        // TICKS PER REVOLUTION FOR 5203 435RPM MOTOR
     static final double DRIVE_GEAR_REDUCTION = 1.0;          // This is < 1.0 if geared UP
     static final double PULLEY_HUB_DIAMETER_INCHES = 1.4;   // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (PULLEY_HUB_DIAMETER_INCHES * 3.1415);
     static final double ARM_SPEED = 1;
-    static final double FIRST_LEVEL_INCHES  = 15;         // HEIGHT FOR FIRST LEVEL IN INCHES
-    static final double SECOND_LEVEL_INCHES = 25;        // HEIGHT FOR SECOND LEVEL IN INCHES
-    static final double THIRD_LEVEL_INCHES  = 36;        // HEIGHT FOR THIRD LEVEL IN INCHES
+    static final double FIRST_LEVEL_INCHES  = 14;         // HEIGHT FOR FIRST LEVEL IN INCHES
+    static final double SECOND_LEVEL_INCHES = 24;        // HEIGHT FOR SECOND LEVEL IN INCHES
+    static final double THIRD_LEVEL_INCHES  = 34;        // HEIGHT FOR THIRD LEVEL IN INCHES
 
 
     //CALCULATED NUMBER OF TICKS USED TO MOVE THE SLIDE 'X' INCHES
     final int LIFT_LEVEL_ORIGINAL = 0;
-    final int LIFT_LEVEL_ZERO = 50;
+    final int LIFT_LEVEL_ZERO =0;
     final int LIFT_LEVEL_ONE = (int) (FIRST_LEVEL_INCHES * COUNTS_PER_INCH);
     final int LIFT_LEVEL_TWO = (int) (SECOND_LEVEL_INCHES * COUNTS_PER_INCH);
     final int LIFT_LEVEL_THREE = (int) (THIRD_LEVEL_INCHES * COUNTS_PER_INCH);
 
     //FINITE STATE MACHINE SETUP
     public enum LiftState {
-        LIFT_START, LIFT_EXTEND_ZERO, LIFT_IDLE, LIFT_EXTEND_ONE,
-        LIFT_EXTEND_TWO, LIFT_EXTEND_THREE, LIFT_DROP, LIFT_EXTEND_ORIGINAL
+        LIFT_START, LIFT_EXTEND_ZERO, LIFT_IDLE, /* LIFT_EXTEND_ONE,
+        LIFT_EXTEND_TWO, LIFT_EXTEND_THREE,*/ LIFT_DROP, LIFT_EXTEND_ORIGINAL
     }
     LiftState liftState = LiftState.LIFT_START;
 
@@ -45,33 +46,32 @@ public class Official_Power_Play_TeleOp extends OpMode {
     public DcMotor LIFT;               // MOTOR FOR THE SLIDE
     public Servo   claw;               // SERVO FOR THE CLAW
 
-    final double CLAW_OPEN =  0.65;     // SERVO POSITION TO OPEN CLAW
+    final double CLAW_OPEN =  0.6;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
+
+    ElapsedTime dropTime = new ElapsedTime();
 
     public void init() {
         //INITIALIZES ALL MOTORS AND DEFAULTS SETTINGS
-        frontLeft  = hardwareMap.dcMotor.get("frontLeft");
-        backLeft   = hardwareMap.dcMotor.get("backLeft");
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        backRight  = hardwareMap.dcMotor.get("backRight");
+        frontLeft  = hardwareMap.dcMotor.get("leftFront");
+        backLeft   = hardwareMap.dcMotor.get("leftRear");
+        frontRight = hardwareMap.dcMotor.get("rightFront");
+        backRight  = hardwareMap.dcMotor.get("rightRear");
 
         LIFT   = hardwareMap.dcMotor.get("Lift");
 
         claw   = hardwareMap.servo.get("claw");
 
         //REVERSE MOTORS IF NECESSARY
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        
-
         //SETS THE ENCODERS ON THE SLIDE TO DEFAULT VALUES
         LIFT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-       
+
         LIFT.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        
+
         LIFT.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        
+
 
         //SETS THE CLAW IN DEFAULT POSITION
         claw.setPosition(CLAW_OPEN);
@@ -107,7 +107,7 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_ONE;
+                    liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.b) {
@@ -115,7 +115,7 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_TWO;
+                    liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.y) {
@@ -123,14 +123,14 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_THREE;
+                    liftState = LiftState.LIFT_DROP;
                 }
                 break;
             case LIFT_DROP:
                 if (gamepad1.right_bumper) {
                     claw.setPosition(CLAW_OPEN);
                     LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                    LIFT.setPower(ARM_SPEED);
+                    LIFT.setPower(ARM_SPEED/1.3);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                     liftState = LiftState.LIFT_EXTEND_ORIGINAL;
@@ -141,7 +141,7 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_ONE;
+                    liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.b) {
@@ -149,7 +149,7 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_TWO;
+                    liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.y) {
@@ -157,15 +157,17 @@ public class Official_Power_Play_TeleOp extends OpMode {
                     LIFT.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_THREE;
+                    liftState = LiftState.LIFT_DROP;
                 }
                 break;
-            case LIFT_EXTEND_ORIGINAL:
+
+           case LIFT_EXTEND_ORIGINAL:
                 if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 10) {
                     LIFT.setPower(0);
                     liftState = LiftState.LIFT_START;
                 }
                 break;
+                /*
             case LIFT_EXTEND_ONE:
                 if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ONE) < 10) {
                     LIFT.setPower(0);
@@ -185,6 +187,8 @@ public class Official_Power_Play_TeleOp extends OpMode {
                 }
                 break;
 
+            */
+
             default:
                 liftState = LiftState.LIFT_START;
         }
@@ -198,9 +202,9 @@ public class Official_Power_Play_TeleOp extends OpMode {
         }
 
         //CODE FOR DRIVE TRAIN
-        double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-        double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-        double rx = gamepad1.right_stick_x;
+        double y = gamepad1.left_stick_y; // Remember, this is reversed!
+        double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+        double rx = -gamepad1.right_stick_x / 1.1;
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
@@ -212,10 +216,11 @@ public class Official_Power_Play_TeleOp extends OpMode {
         double backRightPower = (y + x - rx) / denominator;
 
         //divide by value greater than 1 to make it slower
-        frontLeft.setPower(-frontLeftPower/1.4);
-        backLeft.setPower(-backLeftPower/1.4);
-        frontRight.setPower(-frontRightPower/1.4);
-        backRight.setPower(-backRightPower/1.4);
+        frontLeft.setPower(-frontLeftPower);
+        backLeft.setPower(-backLeftPower);
+        frontRight.setPower(-frontRightPower);
+        backRight.setPower(-backRightPower);
+
     }
 }
 
